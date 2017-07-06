@@ -8,6 +8,18 @@
 
 namespace tinywebsvr {
 
+	template <typename handler_type>
+	class typed_rule
+	{
+		handler_type handler;
+		public void handle();
+	};
+
+	template <typename T>
+	T make_typed_rule(const std::string& url)
+	{
+	}
+
 	/// The common handler for all incoming requests.
 	class request_handler
 	{
@@ -16,7 +28,7 @@ namespace tinywebsvr {
 		request_handler& operator=(const request_handler&) = delete;
 
 		/// Construct with a directory containing files to be served.
-		explicit request_handler(const std::string& doc_root) : doc_root_(doc_root)
+		explicit request_handler()
 		{}
 
 		/// Handle a request and produce a reply.

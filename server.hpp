@@ -22,8 +22,7 @@ namespace tinywebsvr {
 			signals_(io_service_),
 			acceptor_(io_service_),
 			connection_manager_(),
-			socket_(io_service_),
-			request_handler_(doc_root)
+			socket_(io_service_)
 		{
 			// Register to handle the signals that indicate when the server should exit.
 			// It is safe to register for the same signal multiple times in a program,
@@ -54,6 +53,16 @@ namespace tinywebsvr {
 			// asynchronous operation outstanding: the asynchronous accept call waiting
 			// for new incoming connections.
 			io_service_.run();
+		}
+
+		typed_rule& route(const std::string& url)
+		{
+			// url to rule & callback signature
+			auto& rule = make_typed_rule(url);
+
+			request_handler_.add_rule(rule);
+
+			return rule;
 		}
 
 	private:

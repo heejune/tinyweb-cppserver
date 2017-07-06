@@ -20,8 +20,7 @@ int main(int argc, char* argv[])
 	try
 	{
 
-		tinywebsvr::server s(argv[1], argv[2], argv[3]);
-/*		http::server::server s("0.0.0.0", "80", "../public_html");
+		tinywebsvr::server s("0.0.0.0", "80");
 
 		s.route("/hello/<int>").handle(
 			[](const request& req, int count) {
@@ -42,7 +41,7 @@ int main(int argc, char* argv[])
 			std::ostringstream os;
 			os << sum;
 			return response{ os.str() };
-		}); */
+		});
 
 		// Run the server until stopped.
 		s.run();
