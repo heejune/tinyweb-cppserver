@@ -5,16 +5,14 @@
 
 #include <string>
 
-namespace http {
-	namespace server {
+namespace tinywebsvr {
 
-		struct header
-		{
-			std::string name;
-			std::string value;
-		};
+	struct header
+	{
+		std::string name;
+		std::string value;
+	};
 
-	} // namespace server
-} // namespace http
+} // namespace tinywebsvr
 
 #endif // HTTP_HEADER_HPP

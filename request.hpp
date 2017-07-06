@@ -6,20 +6,18 @@
 #include <vector>
 #include "header.hpp"
 
-namespace http {
-	namespace server {
+namespace tinywebsvr {
 
-		/// A request received from a client.
-		struct request
-		{
-			std::string method;
-			std::string uri;
-			int http_version_major;
-			int http_version_minor;
-			std::vector<header> headers;
-		};
+	/// A request received from a client.
+	struct request
+	{
+		std::string method;
+		std::string uri;
+		int http_version_major;
+		int http_version_minor;
+		std::vector<header> headers;
+	};
 
-	} // namespace server
-} // namespace http
+} // namespace tinywebsvr
 
 #endif // HTTP_REQUEST_HPP

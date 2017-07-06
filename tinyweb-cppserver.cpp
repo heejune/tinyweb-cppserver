@@ -1,6 +1,14 @@
 #include <iostream>
 #include <string>
 #include <boost/asio.hpp>
+
+#include "request.hpp"
+#include "reply.hpp"
+#include "mime_types.hpp"
+#include "request_handler.hpp"	
+#include "request_parser.hpp"
+#include "connection_manager.hpp"
+#include "connection.hpp"
 #include "server.hpp"
 
 /// Based on the boost asio C++11 http server sample
@@ -11,19 +19,30 @@ int main(int argc, char* argv[])
 {
 	try
 	{
-		// Check command line arguments.
-		if (argc != 4)
-		{
-			std::cerr << "Usage: http_server <address> <port> <doc_root>\n";
-			std::cerr << "  For IPv4, try:\n";
-			std::cerr << "    receiver 0.0.0.0 80 .\n";
-			std::cerr << "  For IPv6, try:\n";
-			std::cerr << "    receiver 0::0 80 .\n";
-			return 1;
-		}
 
-		// Initialise the server.
-		http::server::server s(argv[1], argv[2], argv[3]);
+		tinywebsvr::server s(argv[1], argv[2], argv[3]);
+/*		http::server::server s("0.0.0.0", "80", "../public_html");
+
+		s.route("/hello/<int>").handle(
+			[](const request& req, int count) {
+				if (count > 100)
+					return crow::response(400);
+			std::ostringstream os;
+			os << count << " bottles of beer!";
+			return response(os.str());
+		});
+
+		s.route("/add_json")
+			.methods("POST")
+			.handle([](const request& req) {
+			auto x = json::load(req.body);
+			if (!x)
+				return response(400);
+			int sum = x["a"].i() + x["b"].i();
+			std::ostringstream os;
+			os << sum;
+			return response{ os.str() };
+		}); */
 
 		// Run the server until stopped.
 		s.run();
