@@ -2,6 +2,10 @@
 
 cmake_minimum_required(VERSION 3.1)
 project(tinyweb-cppserver)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1 )
+# -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+
 add_executable(tinyweb-cppserver tinyweb-cppserver.cpp)
 
 set(Boost_USE_STATIC_LIBS        OFF)
