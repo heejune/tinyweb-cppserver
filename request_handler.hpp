@@ -5,6 +5,7 @@
 
 #include <string>
 #include <fstream>
+#include <unordered_map>
 
 namespace tinywebsvr {
 
@@ -15,9 +16,15 @@ namespace tinywebsvr {
 		request_handler(const request_handler&) = delete;
 		request_handler& operator=(const request_handler&) = delete;
 
-		/// Construct with a directory containing files to be served.
-		explicit request_handler(const std::string& doc_root) : doc_root_(doc_root)
-		{}
+		request_handler() {}
+
+		std::unordered_map<std::string, router_map> _router_map;;
+		
+		template <typename MapType>
+		void add_route(const MapType& map)
+		{
+			_router_map.insert({ map.url , map });
+		}
 
 		/// Handle a request and produce a reply.
 		void handle_request(const request& req, reply& rep)

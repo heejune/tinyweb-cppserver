@@ -19,30 +19,28 @@ int main(int argc, char* argv[])
 {
 	try
 	{
+		tinywebsvr::server s("0.0.0.0", "80");
 
-		tinywebsvr::server s(argv[1], argv[2], argv[3]);
-/*		http::server::server s("0.0.0.0", "80", "../public_html");
-
-		s.route("/hello/<int>").handle(
-			[](const request& req, int count) {
-				if (count > 100)
-					return crow::response(400);
-			std::ostringstream os;
-			os << count << " bottles of beer!";
-			return response(os.str());
+		s.route("/hello/<int>")(
+			[](const tinywebsvr::request& req) {
+			//	if (count > 100)
+			//		return crow::response(400);
+			//std::ostringstream os;
+			//os << count << " bottles of beer!";
+			//return response(os.str());
 		});
 
 		s.route("/add_json")
-			.methods("POST")
-			.handle([](const request& req) {
-			auto x = json::load(req.body);
-			if (!x)
-				return response(400);
-			int sum = x["a"].i() + x["b"].i();
-			std::ostringstream os;
-			os << sum;
-			return response{ os.str() };
-		}); */
+			//.methods("POST")
+			([](const tinywebsvr::request& req) {
+			//auto x = json::load(req.body);
+			//if (!x)
+			//	return response(400);
+			//int sum = x["a"].i() + x["b"].i();
+			//std::ostringstream os;
+			//os << sum;
+			//return response{ os.str() };
+		});
 
 		// Run the server until stopped.
 		s.run();

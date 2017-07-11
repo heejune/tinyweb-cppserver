@@ -17,13 +17,12 @@ namespace tinywebsvr {
 
 		/// Construct the server to listen on the specified TCP address and port, and
 		/// serve up files from the given directory.
-		explicit server(const std::string& address, const std::string& port,
-			const std::string& doc_root) : io_service_(),
+		explicit server(const std::string& address, const std::string& port) : 
+			io_service_(),
 			signals_(io_service_),
 			acceptor_(io_service_),
 			connection_manager_(),
-			socket_(io_service_),
-			request_handler_(doc_root)
+			socket_(io_service_)
 		{
 			// Register to handle the signals that indicate when the server should exit.
 			// It is safe to register for the same signal multiple times in a program,
@@ -54,6 +53,13 @@ namespace tinywebsvr {
 			// asynchronous operation outstanding: the asynchronous accept call waiting
 			// for new incoming connections.
 			io_service_.run();
+		}
+
+		router_map route(const std::string url) 
+		{
+			router_map map(url);
+			request_handler_.add_route(map);
+			return map;
 		}
 
 	private:

@@ -1,0 +1,9 @@
+
+* experimental web server with modern c++
+
+mostly ripped off from:
+
+- https://github.com/lefticus/constexpr_all_the_things
+- https://github.com/ipkn/crow
+- http://www.boost.org/doc/libs/1_64_0/doc/html/boost_asio/examples.html
+
