@@ -18,9 +18,14 @@ find_package(Boost 1.64 REQUIRED COMPONENTS
 
 add_definitions(-DBOOST_ALL_NO_LIB)  # tell the compiler to undefine this boost macro
 
+target_compile_features(tinyweb-cppserver PRIVATE cxx_constexpr cxx_variadic_templates )
+
+set(CMAKE_CXX_STANDARD 14)
+
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS}) 
     target_link_libraries(tinyweb-cppserver ${Boost_LIBRARIES})
     link_directories(${Boost_LIBRARY_DIR})
 endif()
 
+# cmake -DBOOST_ROOT=/home/hekim/devtools/boost_1_64_0/ ..
