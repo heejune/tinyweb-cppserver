@@ -59,37 +59,37 @@ namespace tinywebsvr {
 		{
 			switch (status)
 			{
-			case reply::ok:
+			case T::ok:
 				return boost::asio::buffer(ok);
-			case reply::created:
+			case T::created:
 				return boost::asio::buffer(created);
-			case reply::accepted:
+			case T::accepted:
 				return boost::asio::buffer(accepted);
-			case reply::no_content:
+			case T::no_content:
 				return boost::asio::buffer(no_content);
-			case reply::multiple_choices:
+			case T::multiple_choices:
 				return boost::asio::buffer(multiple_choices);
-			case reply::moved_permanently:
+			case T::moved_permanently:
 				return boost::asio::buffer(moved_permanently);
-			case reply::moved_temporarily:
+			case T::moved_temporarily:
 				return boost::asio::buffer(moved_temporarily);
-			case reply::not_modified:
+			case T::not_modified:
 				return boost::asio::buffer(not_modified);
-			case reply::bad_request:
+			case T::bad_request:
 				return boost::asio::buffer(bad_request);
-			case reply::unauthorized:
+			case T::unauthorized:
 				return boost::asio::buffer(unauthorized);
-			case reply::forbidden:
+			case T::forbidden:
 				return boost::asio::buffer(forbidden);
-			case reply::not_found:
+			case T::not_found:
 				return boost::asio::buffer(not_found);
-			case reply::internal_server_error:
+			case T::internal_server_error:
 				return boost::asio::buffer(internal_server_error);
-			case reply::not_implemented:
+			case T::not_implemented:
 				return boost::asio::buffer(not_implemented);
-			case reply::bad_gateway:
+			case T::bad_gateway:
 				return boost::asio::buffer(bad_gateway);
-			case reply::service_unavailable:
+			case T::service_unavailable:
 				return boost::asio::buffer(service_unavailable);
 			default:
 				return boost::asio::buffer(internal_server_error);
@@ -182,37 +182,37 @@ namespace tinywebsvr {
 		{
 			switch (status)
 			{
-			case reply::ok:
+			case T::ok:
 				return ok;
-			case reply::created:
+			case T::created:
 				return created;
-			case reply::accepted:
+			case T::accepted:
 				return accepted;
-			case reply::no_content:
+			case T::no_content:
 				return no_content;
-			case reply::multiple_choices:
+			case T::multiple_choices:
 				return multiple_choices;
-			case reply::moved_permanently:
+			case T::moved_permanently:
 				return moved_permanently;
-			case reply::moved_temporarily:
+			case T::moved_temporarily:
 				return moved_temporarily;
-			case reply::not_modified:
+			case T::not_modified:
 				return not_modified;
-			case reply::bad_request:
+			case T::bad_request:
 				return bad_request;
-			case reply::unauthorized:
+			case T::unauthorized:
 				return unauthorized;
-			case reply::forbidden:
+			case T::forbidden:
 				return forbidden;
-			case reply::not_found:
+			case T::not_found:
 				return not_found;
-			case reply::internal_server_error:
+			case T::internal_server_error:
 				return internal_server_error;
-			case reply::not_implemented:
+			case T::not_implemented:
 				return not_implemented;
-			case reply::bad_gateway:
+			case T::bad_gateway:
 				return bad_gateway;
-			case reply::service_unavailable:
+			case T::service_unavailable:
 				return service_unavailable;
 			default:
 				return internal_server_error;
