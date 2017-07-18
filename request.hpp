@@ -18,20 +18,6 @@ namespace tinywebsvr {
 		std::vector<header> headers;
 	};
 
-	struct router_map
-	{
-		router_map(const std::string& _url) : url(_url) {}
-		const std::string url;
-		
-		//template <typename ...Args>
-		std::function<void(const request&)> handler;
-
-		void operator()(std::function<void(const request&)> _handler)
-		{
-			handler = _handler;
-		};
-	};
-
 } // namespace tinywebsvr
 
 #endif // HTTP_REQUEST_HPP

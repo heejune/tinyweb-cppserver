@@ -7,6 +7,8 @@
 #include <vector>
 #include <boost/asio.hpp>
 #include "header.hpp"
+#include "mime_types.hpp"
+#include <fstream>
 
 namespace tinywebsvr {
 
@@ -16,7 +18,6 @@ namespace tinywebsvr {
 		const char crlf[] = { '\r', '\n' };
 
 	} // namespace misc_strings
-
 
 	/// A reply to be sent to a client.
 	namespace status_strings {
@@ -284,6 +285,54 @@ namespace tinywebsvr {
 			return rep;
 		}
 
+		static reply response(const std::string& str)
+		{
+			reply rep;
+			rep.status = ok;
+			rep.content = str;
+			rep.headers.resize(2);
+			rep.headers[0].name = "Content-Length";
+			rep.headers[0].value = std::to_string(rep.content.size());
+			rep.headers[1].name = "Content-Type";
+			rep.headers[1].value = "text/html";
+			return rep;
+		}
+
+		static reply reponse_static(const std::string& request_path, const std::string& doc_root = ".")
+		{
+			// Determine the file extension.
+			std::size_t last_slash_pos = request_path.find_last_of("/");
+			std::size_t last_dot_pos = request_path.find_last_of(".");
+			std::string extension;
+			if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
+			{
+				extension = request_path.substr(last_dot_pos + 1);
+			}
+
+			// default value
+			reply rep = reply::stock_reply(reply::not_found);
+
+			// Open the file to send back.
+			std::string full_path = doc_root + request_path;
+			std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
+			if (!is)
+			{
+				return reply::stock_reply(reply::not_found);;
+			}
+
+			// Fill out the reply to be sent to the client.
+			rep.status = reply::ok;
+			char buf[512];
+			while (is.read(buf, sizeof(buf)).gcount() > 0)
+				rep.content.append(buf, is.gcount());
+			rep.headers.resize(2);
+			rep.headers[0].name = "Content-Length";
+			rep.headers[0].value = std::to_string(rep.content.size());
+			rep.headers[1].name = "Content-Type";
+			rep.headers[1].value = mime_types::extension_to_type(extension);
+
+			return rep;
+		}
 	};
 
 } // namespace tinywebsvr

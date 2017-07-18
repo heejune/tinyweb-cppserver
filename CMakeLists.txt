@@ -3,6 +3,9 @@
 cmake_minimum_required(VERSION 3.1)
 project(tinyweb-cppserver)
 
+set(CMAKE_CXX_STANDARD 14)
+set(CXX_STANDARD  14)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1 )
 # -DCMAKE_EXPORT_COMPILE_COMMANDS=1
 
@@ -19,8 +22,6 @@ find_package(Boost 1.64 REQUIRED COMPONENTS
 add_definitions(-DBOOST_ALL_NO_LIB)  # tell the compiler to undefine this boost macro
 
 target_compile_features(tinyweb-cppserver PRIVATE cxx_constexpr cxx_variadic_templates )
-
-set(CMAKE_CXX_STANDARD 14)
 
 SET (CMAKE_AR      "/usr/bin/llvm-ar")
 SET (CMAKE_LINKER  "/usr/bin/llvm-ld")

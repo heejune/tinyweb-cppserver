@@ -4,10 +4,17 @@
 #define HTTP_REQUEST_HANDLER_HPP
 
 #include <string>
-#include <fstream>
-#include <unordered_map>
+#include <map>
+#include "router.h"
+#include <memory>
+#include <tuple>
 
 namespace tinywebsvr {
+
+	struct routerMapComparer
+	{
+		bool operator () (const std::string&l, const std::string& r) { return l.length() < r.length(); }
+	};
 
 	/// The common handler for all incoming requests.
 	class request_handler
@@ -18,12 +25,44 @@ namespace tinywebsvr {
 
 		request_handler() {}
 
-		std::unordered_map<std::string, router_map> _router_map;;
-		
-		template <typename MapType>
-		void add_route(const MapType& map)
+		// TODO: multiple tag support
+		routing_delegator& subscribe(const std::string& rule)
 		{
-			_router_map.insert({ map.url , map });
+			std::vector<std::string> ruleset;
+			auto open_tag = rule.find_first_of("<");
+			std::string url = rule;
+			if (open_tag != std::string::npos) {
+				url = rule.substr(0, open_tag);
+
+				auto close_tag = rule.find_first_of(">");
+				if (close_tag != std::string::npos && close_tag > open_tag) {
+					auto param_type = rule.substr(open_tag, close_tag);
+					ruleset.emplace_back(param_type);
+				}
+			}
+			
+			_router.insert(std::make_pair(url, std::make_unique<routing_delegator>(ruleset)));
+
+			return *_router[url].get();
+		}
+
+		routing_delegator emptydelegator;
+
+		routing_delegator& match(const std::string& requested_url, std::string& matched_url) {
+
+			auto urls = url2vector(requested_url);
+
+			for (size_t i = 0; i < urls.size(); i++)
+			{
+				auto it = _router.find(urls[i]);
+				if (it != _router.end()) {
+					// match
+					matched_url = urls[i];
+					return *_router[urls[i]].get();
+				}
+			}
+
+			return emptydelegator;
 		}
 
 		/// Handle a request and produce a reply.
@@ -36,7 +75,6 @@ namespace tinywebsvr {
 				rep = reply::stock_reply(reply::bad_request);
 				return;
 			}
-
 			// Request path must be absolute and not contain "..".
 			if (request_path.empty() || request_path[0] != '/'
 				|| request_path.find("..") != std::string::npos)
@@ -45,44 +83,67 @@ namespace tinywebsvr {
 				return;
 			}
 
-			// If path ends in slash (i.e. is a directory) then add "index.html".
-			if (request_path[request_path.size() - 1] == '/')
-			{
-				request_path += "index.html";
+			std::string matched_url;
+			auto& routing_delegator = match(req.uri, matched_url);
+
+			if (routing_delegator.routing_data != nullptr) {
+				// url to values
+				auto params = req.uri.substr(req.uri.find(matched_url) + matched_url.size(), std::string::npos);
+				auto vparams = url2vector(params);
+				rep = invoke_with_collection(routing_delegator, req, vparams);
 			}
 
-			// Determine the file extension.
-			std::size_t last_slash_pos = request_path.find_last_of("/");
-			std::size_t last_dot_pos = request_path.find_last_of(".");
-			std::string extension;
-			if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
-			{
-				extension = request_path.substr(last_dot_pos + 1);
-			}
-
-			// Open the file to send back.
-			std::string full_path = doc_root_ + request_path;
-			std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
-			if (!is)
-			{
-				rep = reply::stock_reply(reply::not_found);
-				return;
-			}
-
-			// Fill out the reply to be sent to the client.
-			rep.status = reply::ok;
-			char buf[512];
-			while (is.read(buf, sizeof(buf)).gcount() > 0)
-				rep.content.append(buf, is.gcount());
-			rep.headers.resize(2);
-			rep.headers[0].name = "Content-Length";
-			rep.headers[0].value = std::to_string(rep.content.size());
-			rep.headers[1].name = "Content-Type";
-			rep.headers[1].value = mime_types::extension_to_type(extension);
+			// url routing not found
+			rep = reply::stock_reply(reply::not_found);
+			return;
 		}
+
 	private:
+		reply invoke_with_collection(routing_delegator& delegator, const request& req, const std::vector<std::string>& urls) {
+			switch (urls.size()) {
+			case 1: return delegator.handle(req, urls[0]); break;
+			case 2: return delegator.handle(req, urls[0], urls[1]); break;
+			case 3: return delegator.handle(req, urls[0], urls[1], urls[2]); break;
+			default:
+				return reply();
+			}
+		}
+
+		std::size_t get_param_tag(const std::string& url, std::size_t const begin_pos = 0L) {
+			auto open_tag = url.find_first_of('<', begin_pos);
+			if (open_tag != std::string::npos) {
+				auto close_tag = url.find_first_of('>', open_tag);
+				if (close_tag != std::string::npos)
+					return open_tag;
+			}
+
+			return std::string::npos;
+		}
+
+		struct url_info {
+			std::string url;
+			std::vector<std::string> params;
+		};
+
+		std::vector<std::string> url2vector(const std::string& requesturl) {
+			std::vector<std::string> urls = { requesturl};
+			auto pos = requesturl.find_last_of('/');
+			std::string url = requesturl;
+
+			while (pos != std::string::npos) {
+				url = url.substr(0, pos + 1); // including trailing /
+				urls.emplace_back(url);
+				url.pop_back();	// delete the trailing /
+				pos = url.find_last_of('/'); // but search excluding trailing /
+			}
+
+			return urls;
+		}
+
 		/// The directory containing the files to be served.
 		std::string doc_root_;
+
+		std::map<std::string, std::unique_ptr<routing_delegator>> _router;
 
 		/// Perform URL-decoding on a string. Returns false if the encoding was
 		/// invalid.

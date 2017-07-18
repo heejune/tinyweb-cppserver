@@ -55,11 +55,9 @@ namespace tinywebsvr {
 			io_service_.run();
 		}
 
-		router_map route(const std::string url) 
+		routing_delegator& route(const std::string url)
 		{
-			router_map map(url);
-			request_handler_.add_route(map);
-			return map;
+			return request_handler_.subscribe(url);
 		}
 
 	private:
