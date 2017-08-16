@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
 
 		s.route("/").to(
 			[](const tinywebsvr::request& req) {
-			return tinywebsvr::reply::reponse_static("/index.html");
+			return tinywebsvr::reply::reponse_static("index.html");
 		});
 
 		s.route("/hello/<int>").to(

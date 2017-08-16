@@ -91,6 +91,7 @@ namespace tinywebsvr {
 				auto params = req.uri.substr(req.uri.find(matched_url) + matched_url.size(), std::string::npos);
 				auto vparams = url2vector(params);
 				rep = invoke_with_collection(routing_delegator, req, vparams);
+				return;
 			}
 
 			// url routing not found

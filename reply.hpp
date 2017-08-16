@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <boost/asio.hpp>
+#include <boost/filesystem.hpp>
 #include "header.hpp"
 #include "mime_types.hpp"
 #include <fstream>
@@ -304,16 +305,22 @@ namespace tinywebsvr {
 			std::size_t last_slash_pos = request_path.find_last_of("/");
 			std::size_t last_dot_pos = request_path.find_last_of(".");
 			std::string extension;
-			if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
+			if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos ||
+				last_slash_pos == std::string::npos && last_dot_pos != std::string::npos)
 			{
 				extension = request_path.substr(last_dot_pos + 1);
 			}
+
+			namespace fs = boost::filesystem;
+
+			//boost::filesystem::path full_path(boost::filesystem::current_path());
+			boost::filesystem::path base = fs::system_complete(doc_root);
 
 			// default value
 			reply rep = reply::stock_reply(reply::not_found);
 
 			// Open the file to send back.
-			std::string full_path = doc_root + request_path;
+			std::string full_path = (base /=  request_path).string();
 			std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
 			if (!is)
 			{
@@ -322,6 +329,8 @@ namespace tinywebsvr {
 
 			// Fill out the reply to be sent to the client.
 			rep.status = reply::ok;
+			rep.content.clear();
+
 			char buf[512];
 			while (is.read(buf, sizeof(buf)).gcount() > 0)
 				rep.content.append(buf, is.gcount());
