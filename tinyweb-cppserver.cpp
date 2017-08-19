@@ -15,13 +15,11 @@
 /// http://www.boost.org/doc/libs/1_64_0/doc/html/boost_asio/example/cpp11/http/server/
 ///
 
-struct handler
+// function pointer test
+tinywebsvr::reply handle(const tinywebsvr::request& req)
 {
-	tinywebsvr::reply handle(const tinywebsvr::request& req)
-	{
-		return tinywebsvr::reply::reponse_static("/index.html");
-	}
-};
+	return tinywebsvr::reply::reponse_static("mingw32.PNG");
+}
 
 int main(int argc, char* argv[])
 {
@@ -43,6 +41,9 @@ int main(int argc, char* argv[])
 			os << count << " bottles of beer!";
 			return tinywebsvr::reply::response(os.str());
 		});
+
+		// function pointer
+		s.route("/image").to(handle);
 
 		// Run the server until stopped.
 		s.run();
