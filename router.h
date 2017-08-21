@@ -11,78 +11,46 @@ namespace tinywebsvr {
 	template <typename...>
 	using void_t = void;
 
-	template <class T, bool = std::is_class<T>::value>
-	struct typed_routing_recored
-		: public typed_routing_recored<decltype(&T::operator())>
-	{
-		template <typename F>
-		typed_routing_recored(F f) : typed_routing_recored<decltype(&T::operator()), false>(f) {}
+	// Inferring the call signature of a lambda or arbitrary callable for 'make_function'
+	// https://stackoverflow.com/a/12283159
+	template<typename T> struct remove_class { };
+	template<typename C, typename R, typename... A>
+	struct remove_class<R(C::*)(A...)> { using type = R(A...); };
+	template<typename C, typename R, typename... A>
+	struct remove_class<R(C::*)(A...) const> { using type = R(A...); };
+	template<typename C, typename R, typename... A>
+	struct remove_class<R(C::*)(A...) volatile> { using type = R(A...); };
+	template<typename C, typename R, typename... A>
+	struct remove_class<R(C::*)(A...) const volatile> { using type = R(A...); };
+
+	template<typename T>
+	struct get_signature_impl {
+		using type = typename remove_class<
+			decltype(&std::remove_reference<T>::type::operator())>::type;
 	};
 
-	template <typename RetType, typename classTy, typename... ArgType>
-	struct typed_routing_recored<RetType(classTy::*)(ArgType...) const, false> : public routing_record
-	{
-		std::function<RetType(ArgType...)> stdfn;
+	template<typename R, typename... A>
+	struct get_signature_impl<R(A...)> { using type = R(A...); };
+	template<typename R, typename... A>
+	struct get_signature_impl<R(&)(A...)> { using type = R(A...); };
+	template<typename R, typename... A>
+	struct get_signature_impl<R(*)(A...)> { using type = R(A...); };
 
-		typed_routing_recored(RetType(*pfn)(ArgType...))
-			: stdfn(pfn) {}
+	template<typename T> using get_signature = typename get_signature_impl<T>::type;
 
-		virtual reply handle(void* args) override
-		{
-			static const std::size_t typesize = sizeof...(ArgType);
-			//auto tuple = static_cast<std::tuple<ArgType...>*> (args);
-			auto tuple = static_cast<std::tuple<typename std::decay<ArgType>::type...>*> (args);
-
-			return _handle(*tuple, std::index_sequence_for<ArgType...>());
-		}
-
-		template <std::size_t... Is>
-		RetType _handle(const std::tuple<ArgType...>& tuple, std::index_sequence<Is...>)
-		{
-			return (stdfn)(std::get<Is>(tuple)...);
-		}
-	};
+	template <typename T>
+	struct typed_routing_record;
 
 	template <typename RetType, typename... ArgType>
-	struct typed_routing_recored<RetType(*)(ArgType...), false> : public routing_record
+	struct typed_routing_record<RetType(ArgType...)> : public routing_record
 	{
 		std::function<RetType(ArgType...)> stdfn;
 
-		typed_routing_recored(RetType(*pfn)(ArgType...))
-			: stdfn(pfn) {}
-		void set(RetType(*pfn)(ArgType...)) { stdfn = pfn; }
+		typed_routing_record(RetType(*pfn)(ArgType...)) : stdfn(pfn) {}
 
 		virtual reply handle(void* args) override
 		{
-			static const std::size_t typesize = sizeof...(ArgType);
-			//auto tuple = static_cast<std::tuple<ArgType...>*> (args);
 			auto tuple = static_cast<std::tuple<typename std::decay<ArgType>::type...>*> (args);
-
-			return _handle(*tuple, std::index_sequence_for<ArgType...>());
-		}
-
-		template <std::size_t... Is>
-		RetType _handle(const std::tuple<ArgType...>& tuple, std::index_sequence<Is...>)
-		{
-			return (stdfn)(std::get<Is>(tuple)...);
-		}
-	};
-
-	template <typename RetType, typename classTy, typename... ArgType>
-	struct typed_routing_recored<RetType(classTy::*)(ArgType...), false> : public routing_record
-	{
-		std::function<RetType(ArgType...)> stdfn;
-
-		typed_routing_recored(RetType(*pfn)(ArgType...))
-			: stdfn(pfn) {}
-		void set(RetType(*pfn)(ArgType...)) { stdfn = pfn; }
-
-		virtual reply handle(void* args) override
-		{
-			static const std::size_t typesize = sizeof...(ArgType);
-			//auto tuple = static_cast<std::tuple<ArgType...>*> (args);
-			auto tuple = static_cast<std::tuple<typename std::decay<ArgType>::type...>*> (args);
-
 			return _handle(*tuple, std::index_sequence_for<ArgType...>());
 		}
 
@@ -102,9 +70,7 @@ namespace tinywebsvr {
 		template <typename F>
 		void to(F f)
 		{
-			//routing_data = new typed_routing_recored<decltype(&F::operator())>(f);
-			//routing_data = std::make_unique<typed_routing_recored<decltype(&F::operator())>>(f);
-			routing_data = std::make_unique<typed_routing_recored<F>>(f);
+			routing_data = std::make_unique<typed_routing_record<get_signature<F>>>(f);
 		}
 
 		// invoke handler
@@ -116,7 +82,6 @@ namespace tinywebsvr {
 		}
 
 		std::unique_ptr<routing_record> routing_data = nullptr;
-		//routing_record* routing_data = nullptr;
 
 		std::vector<std::string> ruleset;
 	};
