@@ -4,7 +4,7 @@ namespace tinywebsvr {
 
 	struct routing_record
 	{
-		virtual reply handle(void*) abstract;
+		virtual reply handle(void*) = 0; 
 	};
 
 	// in C++17 std::void_t
